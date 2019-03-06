@@ -76,7 +76,9 @@ def get_veff(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     if hermi == 2:  # because rho = 0
         n, exc, vxc = 0, 0, 0
     else:
-        n, exc, vxc = ks._numint.r_vxc(mol, ks.grids, ks.xc, dm, hermi=hermi)
+        max_memory = ks.max_memory - lib.current_memory()[0]
+        n, exc, vxc = ks._numint.r_vxc(mol, ks.grids, ks.xc, dm, hermi=hermi,
+                                       max_memory=max_memory)
         logger.debug(ks, 'nelec by numeric integration = %s', n)
         t0 = logger.timer(ks, 'vxc', *t0)
 
@@ -115,24 +117,14 @@ def get_veff(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     return vxc
 
 
-def energy_elec(ks, dm=None, h1e=None, vhf=None):
-    return rks.energy_elec(ks, dm, h1e, vhf)
+energy_elec = rks.energy_elec
 
 
 class UKS(dhf.UHF):
     def __init__(self, mol):
         dhf.UHF.__init__(self, mol)
-        self.xc = 'LDA,VWN'
-        self.grids = gen_grid.Grids(self.mol)
-        self.grids.level = getattr(__config__, 'dft_rks_RKS_grids_level',
-                                   self.grids.level)
-        # Use rho to filter grids
-        self.small_rho_cutoff = getattr(__config__, 'dft_rks_RKS_small_rho_cutoff',
-                                        1e-7)
-##################################################
-# don't modify the following attributes, they are not input options
+        rks._dft_common_init_(self)
         self._numint = r_numint.RNumInt()
-        self._keys = self._keys.union(['xc', 'grids', 'small_rho_cutoff'])
 
     def dump_flags(self):
         dhf.UHF.dump_flags(self)

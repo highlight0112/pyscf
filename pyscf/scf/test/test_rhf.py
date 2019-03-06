@@ -176,7 +176,7 @@ class KnownValues(unittest.TestCase):
     def test_analyze(self):
         popandchg, dip = mf.analyze()
         self.assertAlmostEqual(numpy.linalg.norm(popandchg[0]), 4.0049440587033116, 6)
-        self.assertAlmostEqual(numpy.linalg.norm(dip), 2.05844441822, 8)
+        self.assertAlmostEqual(numpy.linalg.norm(dip), 2.0584447549532596, 8)
         popandchg, dip = mf.analyze(with_meta_lowdin=False)
         self.assertAlmostEqual(numpy.linalg.norm(popandchg[0]), 3.2031790129016922, 6)
 
@@ -518,6 +518,12 @@ H     0    0.757    0.587'''
         mf_scanner = mf.x2c().density_fit().newton().as_scanner()
         mf_scanner.chkfile = None
         self.assertAlmostEqual(mf_scanner(mol.atom), -76.075408156235909, 9)
+
+        mol1 = gto.M(atom='H 0 0 0; H 0 0 .9', basis='cc-pvdz')
+        ref = scf.RHF(mol1).x2c().density_fit().kernel()
+        e1 = mf_scanner('H 0 0 0; H 0 0 .9')
+        self.assertAlmostEqual(e1, -1.116394048204042, 9)
+        self.assertAlmostEqual(e1, ref, 9)
 
     def test_natm_eq_0(self):
         mol = gto.M()

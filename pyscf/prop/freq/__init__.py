@@ -15,6 +15,13 @@
 
 from pyscf.prop.freq import rhf
 from pyscf.prop.freq import uhf
+RHF = rhf.Freq
+UHF = uhf.Freq
 
-from pyscf.prop.freq.rhf import Freq as RHF
-from pyscf.prop.freq.uhf import Freq as UHF
+try:
+    from pyscf.prop.freq import rks
+    from pyscf.prop.freq import uks
+    RKS = rks.Freq
+    UKS = uks.Freq
+except ImportError:
+    pass
